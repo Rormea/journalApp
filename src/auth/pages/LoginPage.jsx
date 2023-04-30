@@ -1,21 +1,53 @@
 
+import { useMemo } from 'react'
 import { Link as RouteLink } from 'react-router-dom'
 import { Google, Padding } from "@mui/icons-material"
 import { Button, Grid, Link, TextField, Typography } from "@mui/material"
 import { AuthLayout } from '../layout/AuthLayout'
+import { useForm } from '../../hooks/useForm'
+import { useDispatch, useSelector } from 'react-redux'
+import { chekingAuthentication, startGoogleSingIn } from '../../store/auth/thunks'
+
+
 
 export const LoginPage = () => {
+
+    const { status } = useSelector(state => state.auth);
+
+    const dispatch = useDispatch();
+
+    const { email, password, onInputChange, formState } = useForm(
+        {
+            email: 'ejemplo@gmail.com',
+            password: '123456',
+        }
+    );
+
+    const isAuthenticating = useMemo(() => status === 'checking', [status])
+
+    const onSubmit = (e) => {
+        e.preventDefault();
+        dispatch(chekingAuthentication());
+    };
+
+    const onGoogleSignIn = () => {
+        console.log('onGoogleSignIn')
+        dispatch(startGoogleSingIn());
+    };
+
     return (
-
-
         <AuthLayout title='Login'>
-            <form>
+
+            <form onSubmit={onSubmit}>
                 <Grid container>
                     <Grid item xs={12} sx={{ my: 2, mx: 4 }}>
                         <TextField label='correo'
                             type="email"
                             placeholder="correo.gmail.com"
                             fullWidth
+                            name='email'
+                            value={email}
+                            onChange={onInputChange}
                         />
                     </Grid>
                     <Grid item xs={14} sx={{ my: 2, mx: 4 }} >
@@ -23,16 +55,19 @@ export const LoginPage = () => {
                             type="password"
                             placeholder="contraseña"
                             fullWidth
+                            name='password'
+                            value={password}
+                            onChange={onInputChange}
                         />
                     </Grid>
                     <Grid container spacing={2} sx={{ mb: 2, mx: 4 }}>
                         <Grid item xs={12} sm={6}  >
-                            <Button variant="contained" fullWidth >Login</Button>
+                            <Button type='submit' variant="contained" fullWidth disabled={isAuthenticating} >Login</Button>
                         </Grid>
                         <Grid item xs={12} sm={6}  >
-                            <Button variant="contained" fullWidth >
+                            <Button variant="contained" fullWidth onClick={onGoogleSignIn} disabled={isAuthenticating} >
                                 <Google />
-                                <Typography sx={{ ml: 1 }}  >Google</Typography>
+                                <Typography sx={{ ml: 1 }} >Google</Typography>
                             </Button>
                         </Grid>
                     </Grid>
